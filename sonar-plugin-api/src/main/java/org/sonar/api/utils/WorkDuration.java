@@ -25,7 +25,6 @@ import org.apache.commons.lang.builder.ToStringBuilder;
 import org.apache.commons.lang.builder.ToStringStyle;
 
 import javax.annotation.Nullable;
-
 import java.io.Serializable;
 
 /**
