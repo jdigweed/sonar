@@ -44,4 +44,11 @@ public final class WorkDurationFactory implements BatchComponent, ServerComponen
     return WorkDuration.createFromLong(duration, hoursInDay);
   }
 
+  /**
+   * @since 4.3
+   */
+  public WorkDuration createFromSeconds(long durationInSeconds) {
+    return WorkDuration.createFromSeconds(durationInSeconds, hoursInDay);
+  }
+
 }

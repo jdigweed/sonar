@@ -43,8 +43,8 @@ public class DebtService implements ServerComponent {
     this.workDurationFactory = workDurationFactory;
   }
 
-  public String format(WorkDuration technicalDebt) {
-    return debtFormatter.format(UserSession.get().locale(), technicalDebt);
+  public String format(long debt) {
+    return debtFormatter.format(UserSession.get().locale(), debt);
   }
 
   public WorkDuration toTechnicalDebt(String technicalDebtInLong) {
