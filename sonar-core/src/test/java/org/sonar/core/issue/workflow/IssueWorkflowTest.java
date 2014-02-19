@@ -43,7 +43,7 @@ import static org.mockito.Mockito.mock;
 
 public class IssueWorkflowTest {
 
-  IssueUpdater updater = new IssueUpdater();
+  IssueUpdater updater = new IssueUpdater(null);
   IssueWorkflow workflow = new IssueWorkflow(new FunctionExecutor(updater), updater);
 
   @Test
