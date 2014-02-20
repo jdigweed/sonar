@@ -77,6 +77,7 @@ public class DatabaseVersion implements BatchComponent, ServerComponent {
     "perm_templates_users",
     "perm_templates_groups",
     "quality_gates",
+    "quality_gate_conditions",
     "projects",
     "project_links",
     "project_measures",
