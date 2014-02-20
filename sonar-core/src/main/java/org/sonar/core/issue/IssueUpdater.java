@@ -29,7 +29,6 @@ import org.sonar.api.issue.internal.DefaultIssue;
 import org.sonar.api.issue.internal.DefaultIssueComment;
 import org.sonar.api.issue.internal.IssueChangeContext;
 import org.sonar.api.user.User;
-import org.sonar.api.utils.WorkDurationFactory;
 
 import javax.annotation.Nullable;
 
@@ -49,12 +48,6 @@ public class IssueUpdater implements BatchComponent, ServerComponent {
   public static final String AUTHOR = "author";
   public static final String ACTION_PLAN = "actionPlan";
   public static final String TECHNICAL_DEBT = "technicalDebt";
-
-  private final WorkDurationFactory workDurationFactory;
-
-  public IssueUpdater(WorkDurationFactory workDurationFactory) {
-    this.workDurationFactory = workDurationFactory;
-  }
 
   public boolean setSeverity(DefaultIssue issue, String severity, IssueChangeContext context) {
     if (issue.manualSeverity()) {
@@ -210,9 +203,7 @@ public class IssueUpdater implements BatchComponent, ServerComponent {
     Long oldValue = issue.debt();
     if (!Objects.equal(value, oldValue)) {
       issue.setDebt(value);
-      Long oldValueInLong = oldValue != null ?  workDurationFactory.createFromSeconds(oldValue).toLong() : null;
-      Long newValueInLong = value != null ?  workDurationFactory.createFromSeconds(value).toLong() : null;
-      issue.setFieldChange(context, TECHNICAL_DEBT, oldValueInLong, newValueInLong);
+      issue.setFieldChange(context, TECHNICAL_DEBT, oldValue, value);
       issue.setUpdateDate(context.date());
       issue.setChanged(true);
       return true;
