@@ -83,6 +83,14 @@ public class Measure extends Model {
     return value.intValue();
   }
 
+  @CheckForNull
+  public Long getLongValue() {
+    if (value == null) {
+      return null;
+    }
+    return value.longValue();
+  }
+
   public Measure setValue(@Nullable Double value) {
     this.value = value;
     return this;

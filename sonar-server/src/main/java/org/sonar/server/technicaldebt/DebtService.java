@@ -44,7 +44,7 @@ public class DebtService implements ServerComponent {
   }
 
   public String format(long debt) {
-    return workDurationFormatter.abbreviation(debt);
+    return workDurationFormatter.format(debt, WorkDurationFormatter.Format.SHORT);
   }
 
   public WorkDuration toWorkDuration(long debt) {
