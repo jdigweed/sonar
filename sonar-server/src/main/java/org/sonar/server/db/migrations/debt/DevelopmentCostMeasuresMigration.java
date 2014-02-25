@@ -20,7 +20,6 @@
 
 package org.sonar.server.db.migrations.debt;
 
-import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import org.apache.commons.dbutils.DbUtils;
@@ -44,40 +43,26 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Used in the Active Record Migration 515
+ * Used in the Active Record Migration 516
  */
-public class TechnicalDebtMeasureMigration implements DatabaseMigration {
+public class DevelopmentCostMeasuresMigration implements DatabaseMigration {
 
-  private Logger logger = LoggerFactory.getLogger(TechnicalDebtMeasureMigration.class);
+  private Logger logger = LoggerFactory.getLogger(DevelopmentCostMeasuresMigration.class);
 
   private static final String ID = "id";
-  private static final String VALUE = "changeData";
-  private static final String VAR1 = "var1";
-  private static final String VAR2 = "var2";
-  private static final String VAR3 = "var3";
-  private static final String VAR4 = "var4";
-  private static final String VAR5 = "var5";
+  private static final String VALUE = "value";
 
   private static final String FAILURE_MESSAGE = "Fail to migrate data";
 
   private static final String SQL_SELECT = "SELECT * FROM project_measures INNER JOIN metrics on metrics.id=project_measures.metric_id " +
-    "WHERE (metrics.name='sqale_index' or metrics.name='new_technical_debt' " +
-    // SQALE measures
-    "or metrics.name='development_cost' " +
-    "or metrics.name='sqale_effort_to_grade_a' or metrics.name='sqale_effort_to_grade_b' or metrics.name='sqale_effort_to_grade_c' or metrics.name='sqale_effort_to_grade_d' " +
-    "or metrics.name='blocker_remediation_cost' or metrics.name='critical_remediation_cost' or metrics.name='major_remediation_cost' or metrics.name='minor_remediation_cost' " +
-    "or metrics.name='info_remediation_cost' " +
-    ")";
+    "WHERE (metrics.name='development_cost')";
 
-  private static final String SQL_UPDATE = "UPDATE project_measures SET value=?," +
-    "variation_value_1=?,variation_value_2=?,variation_value_3=?,variation_value_4=?,variation_value_5=? WHERE id=?";
+  private static final String SQL_UPDATE = "UPDATE project_measures SET value=NULL,text_value=? WHERE id=?";
 
   private static final String SQL_SELECT_ALL;
 
   static {
     StringBuilder sb = new StringBuilder("SELECT pm.id AS " + ID + ", pm.value AS " + VALUE +
-      ", pm.variation_value_1 AS " + VAR1 + ", pm.variation_value_2 AS " + VAR2 + ", pm.variation_value_3 AS " + VAR3 +
-      ", pm.variation_value_4 AS " + VAR4 + ", pm.variation_value_5 AS " + VAR5 +
       " FROM project_measures pm " +
       " WHERE ");
     for (int i = 0; i < Referentials.GROUP_SIZE; i++) {
@@ -92,7 +77,7 @@ public class TechnicalDebtMeasureMigration implements DatabaseMigration {
   private final DebtConvertor debtConvertor;
   private final Database db;
 
-  public TechnicalDebtMeasureMigration(Database database, Settings settings) {
+  public DevelopmentCostMeasuresMigration(Database database, Settings settings) {
     this.db = database;
     this.debtConvertor = new DebtConvertor(settings);
   }
@@ -151,14 +136,9 @@ public class TechnicalDebtMeasureMigration implements DatabaseMigration {
       List<Object[]> allParams = Lists.newArrayList();
       QueryRunner runner = new QueryRunner();
       for (Map<String, Object> row : rows) {
-        Object[] params = new Object[7];
+        Object[] params = new Object[2];
         params[0] = convertDebtForDays((Double) row.get(VALUE));
-        params[1] = convertDebtForDays((Double) row.get(VAR1));
-        params[2] = convertDebtForDays((Double) row.get(VAR2));
-        params[3] = convertDebtForDays((Double) row.get(VAR3));
-        params[4] = convertDebtForDays((Double) row.get(VAR4));
-        params[5] = convertDebtForDays((Double) row.get(VAR5));
-        params[6] = row.get(ID);
+        params[1] = row.get(ID);
         allParams.add(params);
       }
       runner.batch(writeConnection, SQL_UPDATE, allParams.toArray(new Object[allParams.size()][]));
@@ -170,13 +150,12 @@ public class TechnicalDebtMeasureMigration implements DatabaseMigration {
     }
   }
 
-  @VisibleForTesting
   @CheckForNull
-  Long convertDebtForDays(@Nullable Double data) {
+  private String convertDebtForDays(@Nullable Double data) {
     if (data == null) {
       return null;
     }
-    return debtConvertor.createFromDays(data);
+    return Long.toString(debtConvertor.createFromDays(data));
   }
 
   private static class RowHandler extends AbstractListHandler<Map<String, Object>> {
@@ -185,11 +164,6 @@ public class TechnicalDebtMeasureMigration implements DatabaseMigration {
       Map<String, Object> map = Maps.newHashMap();
       map.put(ID, SqlUtil.getLong(rs, ID));
       map.put(VALUE, SqlUtil.getDouble(rs, VALUE));
-      map.put(VAR1, SqlUtil.getDouble(rs, VAR1));
-      map.put(VAR2, SqlUtil.getDouble(rs, VAR2));
-      map.put(VAR3, SqlUtil.getDouble(rs, VAR3));
-      map.put(VAR4, SqlUtil.getDouble(rs, VAR4));
-      map.put(VAR5, SqlUtil.getDouble(rs, VAR5));
       return map;
     }
   }
